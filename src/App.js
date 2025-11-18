@@ -46,43 +46,73 @@ function Board({ xIsNext, squares, onPlay }) {
     onPlay(newSquares);
   }
 
+  function row(rowIndexs) {
+    return (
+      <div className="board-row">
+        {rowIndexs.map((i) => (
+          <Square key={i} value={squares[i]} onClick={() => handleClick(i)} />
+        ))}
+      </div>
+    );
+  }
+
   return (
     <>
       <div>{status}</div>
       <div>
-        <div className="board-row">
-          <Square value={squares[0]} onClick={() => handleClick(0)} />
-          <Square value={squares[1]} onClick={() => handleClick(1)} />
-          <Square value={squares[2]} onClick={() => handleClick(2)} />
-        </div>
-        <div className="board-row">
-          <Square value={squares[3]} onClick={() => handleClick(3)} />
-          <Square value={squares[4]} onClick={() => handleClick(4)} />
-          <Square value={squares[5]} onClick={() => handleClick(5)} />
-        </div>
-        <div className="board-row">
-          <Square value={squares[6]} onClick={() => handleClick(6)} />
-          <Square value={squares[7]} onClick={() => handleClick(7)} />
-          <Square value={squares[8]} onClick={() => handleClick(8)} />
-        </div>
+        {row([0, 1, 2])}
+        {row([3, 4, 5])}
+        {row([6, 7, 8])}
       </div>
     </>
   );
 }
 
 export default function Game() {
-  const [xIsNext, setXIsNext] = useState(true);
   const [history, setHistory] = useState([Array(9).fill(null)]);
-  const currentSquares = history[history.length - 1];
+  const [currentMove, setCurrentMove] = useState(0);
+  const xIsNext = currentMove % 2 === 0;
+  const currentSquares = history[currentMove];
 
   function handleOnPlay(newSquares) {
-    setHistory([...history, newSquares]);
-    setXIsNext(!xIsNext);
+    setHistory([...history.slice(0, currentMove + 1), newSquares]);
+    setCurrentMove(currentMove + 1);
   }
 
+  function handleOnClickMovement(move) {
+    setCurrentMove(move);
+  }
+
+  const moves = history.map((_, move) => {
+    let description;
+    if (move > 0) {
+      description = `Go to move #${move}`;
+    } else {
+      description = "Go to game start";
+    }
+
+    return (
+      <li key={move}>
+        <button onClick={() => handleOnClickMovement(move)}>
+          {description}
+        </button>
+      </li>
+    );
+  });
+
   return (
-    <>
-      <Board xIsNext={xIsNext} squares={currentSquares} onPlay={handleOnPlay} />
-    </>
+    <div className="game">
+      <div className="game-board">
+        <Board
+          xIsNext={xIsNext}
+          squares={currentSquares}
+          onPlay={handleOnPlay}
+        />
+      </div>
+
+      <div className="game-info">
+        <ol>{moves}</ol>
+      </div>
+    </div>
   );
 }
